@@ -2,60 +2,180 @@
   "api_key": "",
   "kur": 0,
   "cent_indirim": 0,
-  "fiyat_kaynagi": "liste",
   "ondalik_ayirac": ",",
   "kdv_orani": 20,
-
   "urunler": {
-    "BANTLI":  {"anahtar_kelimeler": ["BOPP", "BOP", "OPP"], "stok_kodu": "OPP02"},
-    "SEDEFLI": {"anahtar_kelimeler": ["SED"], "stok_kodu": "SEDEFLI_KODUNU_YAZ"}
+    "BANTLI": {
+      "anahtar_kelimeler": [
+        "BOPP",
+        "BOP",
+        "OPP"
+      ],
+      "stok_kodu": "OPP02"
+    },
+    "SEDEFLI": {
+      "anahtar_kelimeler": [
+        "SED"
+      ],
+      "stok_kodu": "SEDEFLI_KODUNU_YAZ"
+    }
   },
-
   "en_gruplari": [
-    {"ad": "11-15", "min": 0,  "max": 15},
-    {"ad": "16-22", "min": 16, "max": 22},
-    {"ad": "23+",   "min": 23, "max": 999}
+    {
+      "ad": "11-15",
+      "min": 0,
+      "max": 15
+    },
+    {
+      "ad": "16-22",
+      "min": 16,
+      "max": 22
+    },
+    {
+      "ad": "23+",
+      "min": 23,
+      "max": 999
+    }
   ],
   "boy_gruplari": [
-    {"ad": "10",    "min": 0,  "max": 10},
-    {"ad": "12",    "min": 11, "max": 13},
-    {"ad": "15-17", "min": 14, "max": 17},
-    {"ad": "20",    "min": 18, "max": 20},
-    {"ad": "22x23", "min": 21, "max": 23},
-    {"ad": "25+",   "min": 24, "max": 999}
+    {
+      "ad": "10",
+      "min": 0,
+      "max": 10
+    },
+    {
+      "ad": "12",
+      "min": 11,
+      "max": 13
+    },
+    {
+      "ad": "15-17",
+      "min": 14,
+      "max": 17
+    },
+    {
+      "ad": "20",
+      "min": 18,
+      "max": 20
+    },
+    {
+      "ad": "22x23",
+      "min": 21,
+      "max": 23
+    },
+    {
+      "ad": "25+",
+      "min": 24,
+      "max": 999
+    }
   ],
-
   "fiyat_tablolari_usd": {
     "BANTLI": [
-      [0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0]
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     ],
     "SEDEFLI": [
-      [0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0]
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     ]
   },
-
   "excel": {
     "dosya": "",
     "kur_sayfa": "Kur",
     "kur_hucre": "B2",
     "tablolar": {
-      "BANTLI":  {"sayfa": "SATICI BANTLI VE AA OPP", "sol_ust_hucre": "B3"},
-      "SEDEFLI": {"sayfa": "SATICI SEDEFLİ OPP",      "sol_ust_hucre": "B3"}
+      "BANTLI": {
+        "sayfa": "SATICI BANTLI VE AA OPP",
+        "sol_ust_hucre": "B3"
+      },
+      "SEDEFLI": {
+        "sayfa": "SATICI SEDEFLİ OPP",
+        "sol_ust_hucre": "B3"
+      }
     }
   },
-
   "eta": {
-    "stok_kodu":  [0, 0],
-    "aciklama":   [0, 0],
-    "miktar":     [0, 0],
-    "fiyat":      [0, 0],
+    "cari_kodu": [
+      0,
+      0
+    ],
+    "stok_kodu": [
+      0,
+      0
+    ],
+    "aciklama": [
+      0,
+      0
+    ],
+    "miktar": [
+      0,
+      0
+    ],
+    "fiyat": [
+      0,
+      0
+    ],
     "satir_yuksekligi": 0,
     "gorunur_satir": 15,
     "baslamadan_bekle_sn": 3,
     "tus_arasi_sn": 0.25
-  }
+  },
+  "pdf_klasoru": "C:\\Faturalar",
+  "pdf_bekle_sn": 180,
+  "makro_hiz_carpani": 1.5,
+  "whatsapp": {
+    "bekle_sn": 6,
+    "onizleme_bekle_sn": 3,
+    "mesaj": "Faturanız ektedir. İyi çalışmalar."
+  },
+  "yazdir": {
+    "kopya": 2,
+    "yazici": "",
+    "sumatra_yolu": ""
+  },
+  "makro": []
 }

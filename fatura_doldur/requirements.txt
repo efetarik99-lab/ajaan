@@ -3,3 +3,4 @@ pillow
 openpyxl
 pyautogui
 pyperclip
+pynput
