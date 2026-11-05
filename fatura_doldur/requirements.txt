@@ -1,0 +1,5 @@
+anthropic
+pillow
+openpyxl
+pyautogui
+pyperclip
