@@ -1,6 +1,6 @@
 """Hasel Plastik – Sipariş föyü fotoğrafından ETA satış faturası.
 
-Akış: Fotoğraf seç -> Firma seç -> Oku -> tabloyu kontrol et -> ETA'ya Doldur
+Akış: İstemi kopyala -> fotoğrafı Claude/ChatGPT'ye at -> cevabı yapıştır -> Firma seç -> tabloyu kontrol et -> ETA'ya Doldur
       -> ETA'da kontrol et -> ONAYLA -> (kaydet + e-belge gönder + PDF) makrosu
       -> PDF WhatsApp'tan gider -> yazdırılır.
 Onay vermeden hiçbir şey kaydedilmez/gönderilmez.
@@ -42,6 +42,7 @@ class Uygulama(tk.Tk):
         self.geometry("1150x740")
         self.ayar = ck.ayarlari_yukle(AYAR_YOLU)
         self.rehber = rehber_yukle()
+        self.ham = []
         self.ham_secili = []
         self.satirlar = []
         self.foto = None
@@ -52,9 +53,9 @@ class Uygulama(tk.Tk):
     def _arayuz(self):
         ust = ttk.Frame(self, padding=8)
         ust.pack(fill="x")
-        ttk.Button(ust, text="📷 Fotoğraf Seç", command=self.foto_sec).grid(row=0, column=0)
-        self.foto_lbl = ttk.Label(ust, text="(fotoğraf seçilmedi)", width=34)
-        self.foto_lbl.grid(row=0, column=1, sticky="w", padx=6)
+        ttk.Button(ust, text="📋 İstemi Kopyala", command=self.istem_kopyala).grid(row=0, column=0)
+        ttk.Button(ust, text="📝 Yazıyı Yapıştır", command=self.metin_penceresi).grid(
+            row=0, column=1, sticky="w", padx=6)
         ttk.Label(ust, text="Firma:").grid(row=0, column=2, sticky="e")
         self.firma = tk.StringVar()
         self.firma_cb = ttk.Combobox(ust, textvariable=self.firma, width=24,
@@ -62,8 +63,10 @@ class Uygulama(tk.Tk):
         self.firma_cb.grid(row=0, column=3, padx=4)
         self.firma_cb.bind("<<ComboboxSelected>>", self.firma_secildi)
         self.firma_cb.bind("<FocusOut>", self.firma_secildi)
-        self.oku_btn = ttk.Button(ust, text="🔍 Fotoğrafı Oku", command=self.oku)
-        self.oku_btn.grid(row=0, column=4, padx=4)
+        # İsteğe bağlı: config.json'da api_key varsa fotoğrafı doğrudan okur (ücretli).
+        self.oku_btn = ttk.Button(ust, text="📷 Fotoğraftan Oku (API)", command=self.oku)
+        if self.ayar.get("api_key"):
+            self.oku_btn.grid(row=0, column=4, padx=4)
 
         ttk.Label(ust, text="WhatsApp tel:").grid(row=0, column=5, sticky="e")
         self.tel = tk.StringVar()
@@ -149,18 +152,47 @@ class Uygulama(tk.Tk):
             json.dump(self.rehber, fp, ensure_ascii=False, indent=2)
         self.firma_cb["values"] = sorted(self.rehber)
 
-    def foto_sec(self):
+    def istem_kopyala(self):
+        self.clipboard_clear()
+        self.clipboard_append(ck.ISTEM)
+        messagebox.showinfo(
+            "İstem kopyalandı",
+            "Claude veya ChatGPT'yi açın, sipariş fotoğrafını ekleyin,\n"
+            "Ctrl+V ile bu yazıyı yapıştırıp gönderin.\n\n"
+            "Gelen cevabı kopyalayıp '📝 Yazıyı Yapıştır'a yapıştırın.")
+
+    def metin_penceresi(self):
+        p = tk.Toplevel(self)
+        p.title("Claude / ChatGPT cevabını yapıştırın")
+        p.geometry("760x420")
+        kutu = tk.Text(p, wrap="none", font=("Consolas", 10))
+        kutu.pack(fill="both", expand=True, padx=8, pady=8)
+        try:
+            pano = self.clipboard_get()
+            if "|" in pano:
+                kutu.insert("1.0", pano)
+        except tk.TclError:
+            pass
+        kutu.focus_set()
+
+        def tamam():
+            satirlar = ck.metinden_satirlar(kutu.get("1.0", "end"))
+            if not satirlar:
+                messagebox.showwarning("Boş", "Yazıda '|' ile ayrılmış satır bulunamadı.",
+                                       parent=p)
+                return
+            p.destroy()
+            self._okundu(satirlar, None)
+
+        ttk.Button(p, text="✔ Tamam", command=tamam).pack(pady=(0, 8))
+
+    def oku(self):
         yol = filedialog.askopenfilename(
             title="Sipariş föyü fotoğrafı",
             filetypes=[("Resim", "*.jpg *.jpeg *.png *.webp *.bmp"), ("Hepsi", "*.*")])
-        if yol:
-            self.foto = yol
-            self.foto_lbl.config(text=os.path.basename(yol))
-
-    def oku(self):
-        if not self.foto:
-            messagebox.showinfo("Fotoğraf", "Önce fotoğraf seçin.")
+        if not yol:
             return
+        self.foto = yol
         self.oku_btn.state(["disabled"])
         self.durum.set("Fotoğraf okunuyor (20-60 sn sürebilir)...")
 
@@ -174,13 +206,23 @@ class Uygulama(tk.Tk):
         threading.Thread(target=is_, daemon=True).start()
 
     def _okundu(self, ham, hata):
-        self.oku_btn.state(["!disabled"])
+        if self.oku_btn.winfo_ismapped():
+            self.oku_btn.state(["!disabled"])
         if hata:
             self.durum.set("Okuma başarısız.")
             messagebox.showerror("Hata", str(hata))
             return
+        self.ham = ham
         firmalar = sorted({h["firma"] for h in ham if h.get("firma")})
+        if not self.firma.get().strip() and len(firmalar) == 1:
+            self.firma.set(firmalar[0])
+            self.firma_secildi()
         secili = ck.firma_filtrele(ham, self.firma.get())
+        if not self.firma.get().strip() and len(firmalar) > 1:
+            messagebox.showwarning("Firma", "Föyde birden çok firma var, önce Firma kutusuna "
+                                   "birini yazın/seçin:\n\n" + "\n".join(firmalar))
+            self.durum.set("Firma seçilmedi.")
+            return
         if not secili:
             messagebox.showwarning("Firma", "Bu firma föyde bulunamadı. Föydeki firmalar:\n\n"
                                    + "\n".join(firmalar))
@@ -192,6 +234,8 @@ class Uygulama(tk.Tk):
                        "Sarı satırları kontrol edin.")
 
     def yenile(self):
+        if getattr(self, "ham", None):
+            self.ham_secili = ck.firma_filtrele(self.ham, self.firma.get())
         if not self.ham_secili:
             return
         kur = ck.sayi(self.kur.get())

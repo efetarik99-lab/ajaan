@@ -1,6 +1,5 @@
-anthropic
+anthropic  # sadece API ile okuma kullanılacaksa
 pillow
 openpyxl
 pyautogui
-pyperclip
 pynput

@@ -270,3 +270,51 @@ def fotograftan_oku(yol: str, api_key: str | None = None) -> list[dict]:
         raise RuntimeError("Yanıt yarıda kesildi (çok satır?).")
     metin = next(b.text for b in yanit.content if b.type == "text")
     return json.loads(metin)["satirlar"]
+
+
+# ---------------------------------------------------------------- yapıştırılan metinden okuma
+ISTEM = """Bu fotoğraf HASEL PLASTİK "Günlük Sipariş – İmalat Dökümü" föyü.
+Sütunlar: FİRMA, EBAT, CİNS, SİP. MİK., KG, FİYAT.
+
+Tablodaki HER satırı, aşağıdaki biçimde, her satır bir satıra gelecek şekilde yaz.
+Başka hiçbir açıklama, başlık veya tablo çizgisi ekleme; kod bloğu içinde ver:
+
+FİRMA | EBAT | CİNS | SİP.MİK | KG | FİYAT | NOT
+
+Kurallar:
+- Firma sadece ilk satıra yazılıp altı boş/tırnak (") ise firma adını her satıra yaz.
+- EBAT "13*20" biçiminde olsun.
+- Boş hücreyi boş bırak (iki | arası boş).
+- KG ile sipariş miktarını karıştırma.
+- Emin olmadığın hücre varsa sonuna ? koy ve NOT'a nedenini yaz. Tahmin uydurma.
+
+Örnek:
+ABC AMBALAJ | 13*20 | Bopp | 5000 | 12,5 |  |
+ABC AMBALAJ | 25*35 | Sed | 2000 | 8? |  | KG 8 mi 9 mu belirsiz
+"""
+
+
+def metinden_satirlar(metin: str) -> list[dict]:
+    """ISTEM biçimindeki (veya markdown tablo) yazıyı satır listesine çevirir."""
+    sonuc, onceki_firma = [], ""
+    for ham in (metin or "").splitlines():
+        satir = ham.strip().strip("`").strip()
+        if "|" not in satir:
+            continue
+        hucre = [h.strip() for h in satir.strip("|").split("|")]
+        if all(re.fullmatch(r":?-{2,}:?", h) or not h for h in hucre):
+            continue  # markdown ayırıcı çizgisi
+        if normalize(hucre[1] if len(hucre) > 1 else "") in ("EBAT", "OLCU"):
+            continue  # başlık
+        hucre += [""] * (7 - len(hucre))
+        firma, ebat, cins, sip, kg, fiyat, notu = hucre[:7]
+        if firma in ("", '"', "''", "〃", "-") :
+            firma = onceki_firma
+        onceki_firma = firma
+        supheli = any("?" in h for h in hucre[:6]) or bool(notu)
+        sonuc.append({
+            "firma": firma, "ebat": ebat.replace("?", ""), "cins": cins.replace("?", ""),
+            "siparis_miktari": sip.replace("?", ""), "kg": kg.replace("?", ""),
+            "fiyat": fiyat.replace("?", ""), "supheli": supheli, "not": notu,
+        })
+    return [s for s in sonuc if s["ebat"]]

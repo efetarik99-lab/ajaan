@@ -1,6 +1,6 @@
 # Sipariş Föyünden ETA Faturası (Windows)
 
-Föy fotoğrafını okur → ETA 3-SATIŞ ekranını doldurur → **onayınızı bekler** →
+Föy fotoğrafını Claude veya ChatGPT'ye okutup yazısını yapıştırırsınız → ETA 3-SATIŞ ekranını doldurur → **onayınızı bekler** →
 kaydeder + e-Fatura/e-Arşiv gönderir + PDF alır → PDF'i WhatsApp'tan seçtiğiniz kişiye
 atar → 2 kopya yazdırır.
 
@@ -9,7 +9,8 @@ atar → 2 kopya yazdırır.
 2. **SumatraPDF** kurun (sessiz ve doğru kopya sayısıyla yazdırma için; ücretsiz).
 3. WhatsApp Masaüstü kurulu ve oturum açık olsun.
 4. Klasörü kopyalayın (ör. `C:\FaturaDoldur`), `config.json`'ı Not Defteri ile açın:
-   - `api_key`: Anthropic API anahtarı (fotoğraf okuma için).
+   - `api_key`: **Boş bırakın.** (Doldurulursa fotoğrafı ücretli API ile doğrudan okuyan
+     ek bir düğme çıkar; gerek yok.)
    - `urunler > SEDEFLI > stok_kodu`: Sedefli bantlı OPP torbanın ETA stok kodu.
    - `excel`: `Hasel Fiyat Listesi TL.xlsx` yolu, kur hücresi, her tablonun sayfa adı ve
      sol üst fiyat hücresi (en 11-15 / boy 10). Ya da `fiyat_tablolari_usd`'ye elle yazın.
@@ -33,14 +34,18 @@ Doldurulmuş gerçek bir faturada **⏺ Kaydet/Gönder Makrosu**'na basın ve he
 Ekranlar her faturada aynı yerde açılmalı; ETA penceresini büyütülmüş kullanın.
 
 ## 4. Günlük kullanım
-1. **📷 Fotoğraf Seç**, **Firma** seçin/yazın (telefon ve cari kodu rehberden gelir;
-   yeni firmada bir kez yazın, otomatik hatırlanır), **🔍 Fotoğrafı Oku**.
-2. Kur / indirim → **↻ Hesapla**. Sarı satırları çift tıklayıp düzeltin.
-3. ETA'da boş 3-SATIŞ ekranı açıkken **▶ ETA'ya Doldur**.
-4. Açılan **Onay** penceresindeki toplamları ETA ile karşılaştırın:
+1. **📋 İstemi Kopyala** → Claude veya ChatGPT'yi açın, föy fotoğrafını ekleyin,
+   Ctrl+V ile istemi yapıştırıp gönderin. Gelen cevabı (| ile ayrılmış satırlar) kopyalayın.
+   (İstemi bir kez Claude Projesi / ChatGPT özel talimatı olarak kaydederseniz sadece
+   fotoğrafı atmanız yeter.)
+2. **📝 Yazıyı Yapıştır** → Tamam. **Firma** seçin/yazın (telefon ve cari kodu rehberden
+   gelir; yeni firmada bir kez yazın, otomatik hatırlanır).
+3. Kur / indirim → **↻ Hesapla** (firmayı değiştirince de buna basın). Sarı satırları çift tıklayıp düzeltin.
+4. ETA'da boş 3-SATIŞ ekranı açıkken **▶ ETA'ya Doldur**.
+5. Açılan **Onay** penceresindeki toplamları ETA ile karşılaştırın:
    - **✔ ONAYLA** → kaydet, gönder, PDF, WhatsApp, 2 kopya yazdır.
    - **✖ Vazgeç** → hiçbir şey kaydedilmez; ETA'da düzeltip kendiniz devam edebilirsiniz.
-5. Bir şey ters giderse PDF'i ETA'dan elle kaydedip
+6. Bir şey ters giderse PDF'i ETA'dan elle kaydedip
    **📤 Hazır PDF'i Gönder + Yazdır** ile gönderin.
 
 **Acil durdurma:** fareyi ekranın **sol üst köşesine** götürün.

@@ -1,0 +1,18 @@
+Bu fotoğraf HASEL PLASTİK "Günlük Sipariş – İmalat Dökümü" föyü.
+Sütunlar: FİRMA, EBAT, CİNS, SİP. MİK., KG, FİYAT.
+
+Tablodaki HER satırı, aşağıdaki biçimde, her satır bir satıra gelecek şekilde yaz.
+Başka hiçbir açıklama, başlık veya tablo çizgisi ekleme; kod bloğu içinde ver:
+
+FİRMA | EBAT | CİNS | SİP.MİK | KG | FİYAT | NOT
+
+Kurallar:
+- Firma sadece ilk satıra yazılıp altı boş/tırnak (") ise firma adını her satıra yaz.
+- EBAT "13*20" biçiminde olsun.
+- Boş hücreyi boş bırak (iki | arası boş).
+- KG ile sipariş miktarını karıştırma.
+- Emin olmadığın hücre varsa sonuna ? koy ve NOT'a nedenini yaz. Tahmin uydurma.
+
+Örnek:
+ABC AMBALAJ | 13*20 | Bopp | 5000 | 12,5 |  |
+ABC AMBALAJ | 25*35 | Sed | 2000 | 8? |  | KG 8 mi 9 mu belirsiz
