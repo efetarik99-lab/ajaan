@@ -5,12 +5,15 @@ kaydeder + e-Fatura/e-Arşiv gönderir + PDF alır → PDF'i WhatsApp'tan seçti
 atar → 2 kopya yazdırır.
 
 ## 1. Kurulum (bir kez)
-1. Zip'e sağ tıklayın → **Tümünü ayıkla** → `C:\FaturaDoldur` klasörüne çıkarın.
-2. Klasördeki **KUR.bat**'a çift tıklayın. Python, gerekli paketler ve SumatraPDF
-   kendiliğinden kurulur, masaüstüne **Fatura Doldur** simgesi gelir.
-   (Windows "korumalı" uyarısı verirse: *Ek bilgi* → *Yine de çalıştır*.)
+1. `FaturaDoldur.zip`'e sağ tıklayın → **Tümünü ayıkla** → `C:\FaturaDoldur` klasörüne çıkarın.
+2. **FaturaDoldur.exe**'ye çift tıklayın. Python kurmaya gerek yok.
+   Windows "bilgisayarınız korundu" derse: **Ek bilgi** → **Yine de çalıştır**.
+   İsterseniz exe'ye sağ tıklayıp **Gönder → Masaüstü (kısayol oluştur)** yapın.
 3. Program ilk açılışta sedefli ürünün stok kodunu ve fiyat listesi Excel'ini sorar.
 4. WhatsApp Masaüstü kurulu ve oturumu açık olsun.
+5. (İsteğe bağlı) sessiz ve 2 kopya yazdırma için ücretsiz **SumatraPDF** kurun.
+   Kurulu değilse PDF, bilgisayardaki PDF programıyla yazdırılır.
+6. `config.json` exe'nin yanında durmalı; ayarlar orada saklanır.
 
 ## 2. ETA kalibrasyonu (bir kez)
 ETA'da boş 3-SATIŞ ekranını büyütün → **⚙ ETA Kalibrasyonu**. Fareyi sırayla
