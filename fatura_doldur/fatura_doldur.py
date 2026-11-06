@@ -70,7 +70,7 @@ class Uygulama(tk.Tk):
             if messagebox.askyesno("İlk kurulum", "'Hasel Fiyat Listesi TL.xlsx' dosyasını "
                                    "şimdi seçmek ister misiniz?", parent=self):
                 yol = filedialog.askopenfilename(title="Hasel Fiyat Listesi",
-                                                 filetypes=[("Excel", "*.xlsx *.xlsm")])
+                                                 filetypes=[("Excel", "*.xlsx *.xlsm *.xls")])
                 if yol:
                     ex["dosya"] = yol
         if degisti:
@@ -141,6 +141,7 @@ class Uygulama(tk.Tk):
         ttk.Label(ayar, text="Kurulum:").pack(side="left")
         ttk.Button(ayar, text="⚙ ETA Kalibrasyonu", command=self.kalibrasyon).pack(side="left", padx=4)
         ttk.Button(ayar, text="⏺ Kaydet/Gönder Makrosu", command=self.makro_kaydet).pack(side="left", padx=4)
+        ttk.Button(ayar, text="📊 Fiyat Listesi Seç", command=self.fiyat_listesi_sec).pack(side="left", padx=4)
         ttk.Button(ayar, text="📤 Hazır PDF'i Gönder + Yazdır",
                    command=self.hazir_pdf).pack(side="right")
 
@@ -152,18 +153,43 @@ class Uygulama(tk.Tk):
         self.after(0, self.durum.set, m)
 
     # ================================================================ veri
-    def _excel_yukle(self):
+    def _excel_yukle(self, goster=False):
         self.tablolar = self.ayar.get("fiyat_tablolari_usd", {})
         try:
             ex_tablo, ex_kur = ck.excelden_fiyatlari_oku(self.ayar)
         except Exception as e:  # noqa: BLE001
-            messagebox.showwarning("Excel", f"Fiyat listesi okunamadı:\n{e}")
+            messagebox.showwarning(
+                "Fiyat listesi okunamadı",
+                f"{e}\n\nBu pencerenin ve Excel'deki fiyat tablosunun ekran görüntüsünü "
+                "Claude'a gönderin, ayarı o yapsın.")
             return
         if ex_tablo:
             self.tablolar = {**self.tablolar, **ex_tablo}
             self.durum.set("Fiyatlar Excel'den okundu.")
-        if ex_kur and not self.kur.get():
+        if ex_kur:
             self.kur.set(str(ex_kur))
+        if goster:
+            en = [g["ad"] for g in self.ayar["en_gruplari"]]
+            boy = [g["ad"] for g in self.ayar["boy_gruplari"]]
+            parca = [f"Kur: {ex_kur or '(okunamadı, elle girin)'}\n"]
+            for tip, tablo in ex_tablo.items():
+                parca.append(f"{tip}  (boy: {' / '.join(boy)})")
+                for ad, satir in zip(en, tablo):
+                    parca.append(f"  en {ad}: " + "  ".join("-" if v is None else str(v)
+                                                            for v in satir))
+            messagebox.showinfo("Okunan fiyatlar (USD)", "\n".join(parca) +
+                                "\n\nRakamlar listedekiyle aynı değilse ekran görüntüsünü "
+                                "Claude'a gönderin.")
+
+    def fiyat_listesi_sec(self):
+        yol = filedialog.askopenfilename(
+            title="Hasel Fiyat Listesi",
+            filetypes=[("Excel", "*.xlsx *.xlsm *.xls"), ("Hepsi", "*.*")])
+        if not yol:
+            return
+        self.ayar.setdefault("excel", {})["dosya"] = yol
+        ck.ayarlari_kaydet(AYAR_YOLU, self.ayar)
+        self._excel_yukle(goster=True)
 
     def firma_secildi(self, _=None):
         k = self.rehber.get(self.firma.get())

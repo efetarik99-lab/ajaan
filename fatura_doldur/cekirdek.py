@@ -81,17 +81,34 @@ def excelden_fiyatlari_oku(ayar: dict) -> tuple[dict, float | None]:
     dosya = ex.get("dosya")
     if not dosya or not os.path.exists(dosya):
         return {}, None
+    if dosya.lower().endswith(".xls"):
+        raise ValueError("Dosya eski .xls biçiminde. Excel'de açıp 'Farklı Kaydet' → "
+                         "'Excel Çalışma Kitabı (.xlsx)' olarak kaydedin ve onu seçin.")
     import openpyxl
 
     wb = openpyxl.load_workbook(dosya, data_only=True)
+
+    def sayfa(ad):
+        if ad in wb.sheetnames:
+            return wb[ad]
+        n = normalize(ad)
+        for s in wb.sheetnames:  # büyük/küçük harf, Türkçe karakter farkını tolere et
+            if normalize(s) == n or n in normalize(s) or normalize(s) in n:
+                return wb[s]
+        raise ValueError(f"Excel'de '{ad}' sayfası yok.\nDosyadaki sayfalar: "
+                         + ", ".join(wb.sheetnames))
+
     kur = None
     if ex.get("kur_sayfa") and ex.get("kur_hucre"):
-        kur = sayi(wb[ex["kur_sayfa"]][ex["kur_hucre"]].value)
+        try:
+            kur = sayi(sayfa(ex["kur_sayfa"])[ex["kur_hucre"]].value)
+        except ValueError:
+            kur = None
     n_en = len(ayar["en_gruplari"])
     n_boy = len(ayar["boy_gruplari"])
     tablolar = {}
     for tip, t in (ex.get("tablolar") or {}).items():
-        ws = wb[t["sayfa"]]
+        ws = sayfa(t["sayfa"])
         bas = ws[t["sol_ust_hucre"]]
         tablo = []
         for r in range(n_en):
