@@ -47,7 +47,35 @@ class Uygulama(tk.Tk):
         self.satirlar = []
         self.foto = None
         self._arayuz()
+        self.after(300, self._ilk_kurulum)
         self._excel_yukle()
+
+    def _ilk_kurulum(self):
+        """İlk açılışta eksik ayarları basit sorularla tamamlar."""
+        from tkinter import simpledialog
+
+        degisti = False
+        sed = self.ayar["urunler"].get("SEDEFLI", {})
+        if sed.get("stok_kodu", "").startswith("SEDEFLI_KODU"):
+            kod = simpledialog.askstring(
+                "İlk kurulum", "SEDEFLİ BANTLI OPP TORBA'nın ETA stok kodu nedir?\n"
+                "(Bilmiyorsanız boş geçin, sonra sorarız.)", parent=self)
+            if kod:
+                sed["stok_kodu"] = kod.strip()
+                degisti = True
+        ex = self.ayar.setdefault("excel", {})
+        if not ex.get("dosya") and not ex.get("soruldu"):
+            ex["soruldu"] = True
+            degisti = True
+            if messagebox.askyesno("İlk kurulum", "'Hasel Fiyat Listesi TL.xlsx' dosyasını "
+                                   "şimdi seçmek ister misiniz?", parent=self):
+                yol = filedialog.askopenfilename(title="Hasel Fiyat Listesi",
+                                                 filetypes=[("Excel", "*.xlsx *.xlsm")])
+                if yol:
+                    ex["dosya"] = yol
+        if degisti:
+            ck.ayarlari_kaydet(AYAR_YOLU, self.ayar)
+            self._excel_yukle()
 
     # ================================================================ arayüz
     def _arayuz(self):

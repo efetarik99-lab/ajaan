@@ -1,4 +1,3 @@
 @echo off
 cd /d "%~dp0"
-python -m pip install -q -r requirements.txt
-pythonw fatura_doldur.py
+where pyw >nul 2>nul && (start "" pyw fatura_doldur.py) || (start "" pythonw fatura_doldur.py)

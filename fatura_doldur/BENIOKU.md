@@ -5,19 +5,12 @@ kaydeder + e-Fatura/e-Arşiv gönderir + PDF alır → PDF'i WhatsApp'tan seçti
 atar → 2 kopya yazdırır.
 
 ## 1. Kurulum (bir kez)
-1. Python 3.11+ kurun (python.org, kurulumda **"Add to PATH"** işaretli).
-2. **SumatraPDF** kurun (sessiz ve doğru kopya sayısıyla yazdırma için; ücretsiz).
-3. WhatsApp Masaüstü kurulu ve oturum açık olsun.
-4. Klasörü kopyalayın (ör. `C:\FaturaDoldur`), `config.json`'ı Not Defteri ile açın:
-   - `api_key`: **Boş bırakın.** (Doldurulursa fotoğrafı ücretli API ile doğrudan okuyan
-     ek bir düğme çıkar; gerek yok.)
-   - `urunler > SEDEFLI > stok_kodu`: Sedefli bantlı OPP torbanın ETA stok kodu.
-   - `excel`: `Hasel Fiyat Listesi TL.xlsx` yolu, kur hücresi, her tablonun sayfa adı ve
-     sol üst fiyat hücresi (en 11-15 / boy 10). Ya da `fiyat_tablolari_usd`'ye elle yazın.
-   - `pdf_klasoru`: PDF'lerin kaydedileceği klasör.
-   - `yazdir > kopya`: 2. `yazici` boşsa varsayılan yazıcı.
-   - `whatsapp > mesaj`: PDF ile giden yazı.
-5. `BASLAT.bat`'a çift tıklayın.
+1. Zip'e sağ tıklayın → **Tümünü ayıkla** → `C:\FaturaDoldur` klasörüne çıkarın.
+2. Klasördeki **KUR.bat**'a çift tıklayın. Python, gerekli paketler ve SumatraPDF
+   kendiliğinden kurulur, masaüstüne **Fatura Doldur** simgesi gelir.
+   (Windows "korumalı" uyarısı verirse: *Ek bilgi* → *Yine de çalıştır*.)
+3. Program ilk açılışta sedefli ürünün stok kodunu ve fiyat listesi Excel'ini sorar.
+4. WhatsApp Masaüstü kurulu ve oturumu açık olsun.
 
 ## 2. ETA kalibrasyonu (bir kez)
 ETA'da boş 3-SATIŞ ekranını büyütün → **⚙ ETA Kalibrasyonu**. Fareyi sırayla
