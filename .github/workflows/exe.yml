@@ -1,0 +1,42 @@
+name: Windows exe derle
+on:
+  push:
+    branches: [master]
+    paths: ['fatura_doldur/**', '.github/workflows/exe.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  derle:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r fatura_doldur/requirements.txt pyinstaller
+      - run: >
+          pyinstaller --noconfirm --onefile --windowed --name FaturaDoldur
+          --hidden-import pynput.keyboard._win32 --hidden-import pynput.mouse._win32
+          fatura_doldur/fatura_doldur.py
+      - name: Paketle
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory paket | Out-Null
+          Copy-Item dist/FaturaDoldur.exe paket/
+          Copy-Item fatura_doldur/config.json, fatura_doldur/istem.txt, fatura_doldur/BENIOKU.md paket/
+          Compress-Archive -Path paket/* -DestinationPath FaturaDoldur.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FaturaDoldur
+          path: FaturaDoldur.zip
+      - name: exe dalina koy
+        shell: bash
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan exe
+          git rm -rf --cached . > /dev/null
+          git add -f FaturaDoldur.zip
+          git commit -m "exe ${GITHUB_SHA}"
+          git push -f origin exe
