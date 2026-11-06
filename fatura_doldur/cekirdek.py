@@ -75,8 +75,41 @@ def _grup_bul(deger: int, gruplar: list[dict]) -> int | None:
     return None
 
 
+def _hucre_bul(ws, metin):
+    """Sayfada metni içeren ilk hücreyi bulur."""
+    n = normalize(metin)
+    for satir in ws.iter_rows():
+        for h in satir:
+            if isinstance(h.value, str) and n in normalize(h.value):
+                return h
+    return None
+
+
+def _tablo_oku(ws, baslik, n_en, n_boy):
+    """Başlığın altındaki ilk n_en adet 'en az n_boy sayı içeren' satırı okur."""
+    tablo = []
+    for r in range(baslik.row + 1, baslik.row + 25):
+        sayilar = []
+        for c in range(max(1, baslik.column - 1), baslik.column + n_boy + 6):
+            v = ws.cell(row=r, column=c).value
+            if isinstance(v, (int, float)) and not isinstance(v, bool):
+                sayilar.append(float(v))
+            elif sayilar and v not in (None, ""):
+                break
+        if len(sayilar) >= n_boy:
+            tablo.append(sayilar[-n_boy:])  # en grubu sayıysa baştakini at
+            if len(tablo) == n_en:
+                return tablo
+        elif tablo:
+            break  # tablo bitti
+    return tablo
+
+
 def excelden_fiyatlari_oku(ayar: dict) -> tuple[dict, float | None]:
-    """Ayardaki 'excel' bölümüne göre fiyat tablolarını ve kuru Excel'den okur."""
+    """Fiyat tablolarını ve kuru Excel'den okur.
+
+    Tablolar 'baslik' ile verilmişse tüm sayfalarda o başlık aranır ve altındaki
+    sayı bloğu okunur; 'sol_ust_hucre' verilmişse doğrudan o hücreden okunur."""
     ex = ayar.get("excel") or {}
     dosya = ex.get("dosya")
     if not dosya or not os.path.exists(dosya):
@@ -87,37 +120,65 @@ def excelden_fiyatlari_oku(ayar: dict) -> tuple[dict, float | None]:
     import openpyxl
 
     wb = openpyxl.load_workbook(dosya, data_only=True)
+    n_en, n_boy = len(ayar["en_gruplari"]), len(ayar["boy_gruplari"])
 
     def sayfa(ad):
-        if ad in wb.sheetnames:
-            return wb[ad]
         n = normalize(ad)
-        for s in wb.sheetnames:  # büyük/küçük harf, Türkçe karakter farkını tolere et
-            if normalize(s) == n or n in normalize(s) or normalize(s) in n:
+        for s in wb.sheetnames:
+            if normalize(s) == n or n in normalize(s):
                 return wb[s]
-        raise ValueError(f"Excel'de '{ad}' sayfası yok.\nDosyadaki sayfalar: "
-                         + ", ".join(wb.sheetnames))
+        return None
 
+    # --- kur: önce "USD/DOLAR" etiketinin yanındaki sayı, yoksa ayardaki hücre,
+    #     o da yoksa sayfadaki ilk makul sayı
     kur = None
-    if ex.get("kur_sayfa") and ex.get("kur_hucre"):
-        try:
-            kur = sayi(sayfa(ex["kur_sayfa"])[ex["kur_hucre"]].value)
-        except ValueError:
-            kur = None
-    n_en = len(ayar["en_gruplari"])
-    n_boy = len(ayar["boy_gruplari"])
-    tablolar = {}
+    ks = sayfa(ex.get("kur_sayfa") or "KUR")
+    if ks is not None:
+        def makul(v):
+            return isinstance(v, (int, float)) and not isinstance(v, bool) and 1 < v < 1000
+
+        etiket = _hucre_bul(ks, "USD") or _hucre_bul(ks, "DOLAR")
+        if etiket:
+            yakin = [ks.cell(row=etiket.row, column=etiket.column + k).value for k in (1, 2, 3)]
+            yakin.append(ks.cell(row=etiket.row + 1, column=etiket.column).value)
+            kur = next((float(v) for v in yakin if makul(v)), None)
+        if kur is None and ex.get("kur_hucre"):
+            v = ks[ex["kur_hucre"]].value
+            kur = float(v) if makul(v) else None
+        if kur is None:
+            kur = next((float(h.value) for r in ks.iter_rows() for h in r if makul(h.value)),
+                       None)
+
+    # --- tablolar
+    tablolar, eksik = {}, []
+    varsayilan_baslik = {"BANTLI": "SATICI BANTLI", "SEDEFLI": "SATICI SEDEF"}
     for tip, t in (ex.get("tablolar") or {}).items():
-        ws = sayfa(t["sayfa"])
-        bas = ws[t["sol_ust_hucre"]]
-        tablo = []
-        for r in range(n_en):
-            satir = []
-            for c in range(n_boy):
-                v = ws.cell(row=bas.row + r, column=bas.column + c).value
-                satir.append(sayi(v))
-            tablo.append(satir)
+        if t.get("sayfa") and sayfa(t["sayfa"]) is None:
+            # eski ayar: sayfa yoksa başlıktan otomatik bul
+            t = {"baslik": varsayilan_baslik.get(tip, t["sayfa"])}
+        if t.get("sol_ust_hucre"):
+            ws = sayfa(t.get("sayfa", "")) or wb.worksheets[0]
+            bas = ws[t["sol_ust_hucre"]]
+            tablolar[tip] = [[sayi(ws.cell(row=bas.row + r, column=bas.column + c).value)
+                              for c in range(n_boy)] for r in range(n_en)]
+            continue
+        bulundu = None
+        for ws in wb.worksheets:
+            h = _hucre_bul(ws, t["baslik"])
+            if h is not None:
+                bulundu = (ws, h)
+                break
+        if not bulundu:
+            eksik.append(f"'{t['baslik']}' başlığı bulunamadı")
+            continue
+        tablo = _tablo_oku(bulundu[0], bulundu[1], n_en, n_boy)
+        if len(tablo) < n_en:
+            eksik.append(f"'{t['baslik']}' altında {n_en} satır × {n_boy} fiyat bulunamadı "
+                         f"({bulundu[0].title}!{bulundu[1].coordinate})")
+            continue
         tablolar[tip] = tablo
+    if eksik and not tablolar:
+        raise ValueError("\n".join(eksik) + "\nDosyadaki sayfalar: " + ", ".join(wb.sheetnames))
     return tablolar, kur
 
 

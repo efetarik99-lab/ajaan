@@ -126,15 +126,13 @@
   "excel": {
     "dosya": "",
     "kur_sayfa": "Kur",
-    "kur_hucre": "B2",
+    "kur_hucre": "",
     "tablolar": {
       "BANTLI": {
-        "sayfa": "SATICI BANTLI VE AA OPP",
-        "sol_ust_hucre": "B3"
+        "baslik": "SATICI BANTLI"
       },
       "SEDEFLI": {
-        "sayfa": "SATICI SEDEFLİ OPP",
-        "sol_ust_hucre": "B3"
+        "baslik": "SATICI SEDEF"
       }
     }
   },
